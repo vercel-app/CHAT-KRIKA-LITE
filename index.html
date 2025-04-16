@@ -714,6 +714,77 @@
 .activation-content p {
     margin-bottom: 15px;
 }
+    /* Botão de banimento */
+.ban-button {
+    background: #f44336;
+}
+
+.ban-button:hover {
+    background: #d32f2f;
+}
+
+/* Modal de banimento */
+.ban-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+    animation: fadeIn 0.3s ease;
+}
+
+.ban-box {
+    width: 90%;
+    max-width: 400px;
+    margin: 100px auto;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.ban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.ban-header h2 {
+    color: #f44336;
+}
+
+.close-ban {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.danger-btn {
+    background: #f44336;
+}
+
+.danger-btn:hover {
+    background: #d32f2f;
+}
     </style>
 </head>
 <body>
@@ -839,6 +910,34 @@
                 <input type="text" id="activationCode" placeholder="Código de ativação">
             </div>
             <button class="btn" id="submitActivationBtn">Ativar</button>
+        </div>
+    </div>
+</div>
+          <!-- Botão flutuante para banir usuários (visível apenas para administradores) -->
+<div class="floating-button ban-button" id="banUserButton" style="top: calc(50% + 70px);">
+    <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M7,11H17V13H7V11Z"></path></svg>
+</div>
+
+<!-- Modal para banir usuários -->
+<div class="ban-modal" id="banModal">
+    <div class="ban-box">
+        <div class="ban-header">
+            <h2>Banir Usuário</h2>
+            <button class="close-ban" id="closeBan">&times;</button>
+        </div>
+        <div class="ban-content">
+            <p>Digite o email do usuário que deseja banir:</p>
+            <div class="form-group">
+                <input type="email" id="banEmail" placeholder="Email do usuário">
+            </div>
+            <div class="form-group">
+                <input type="text" id="banReason" placeholder="Motivo do banimento (opcional)">
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="deleteUserData">
+                <label for="deleteUserData">Apagar todos os dados do usuário</label>
+            </div>
+            <button class="btn danger-btn" id="submitBanBtn">Banir Usuário</button>
         </div>
     </div>
 </div>
@@ -1597,6 +1696,218 @@ submitActivationBtn.addEventListener('click', () => {
         showNotification('Código inválido. Tente novamente.');
     }
 });
+      // Botão e modal de banimento
+const banUserButton = document.getElementById('banUserButton');
+const banModal = document.getElementById('banModal');
+const closeBan = document.getElementById('closeBan');
+const submitBanBtn = document.getElementById('submitBanBtn');
+
+// Verificar se o usuário é administrador (pode banir)
+function checkAdminPermissions() {
+    // Por padrão, apenas o email verificado especial é administrador
+    const isAdmin = currentUser && currentUser.email === 'isaacmuaco582@gmail.com';
+    banUserButton.style.display = isAdmin ? 'flex' : 'none';
+    return isAdmin;
+}
+
+// Atualizar visibilidade do botão de ban quando o usuário mudar
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // Verificar permissões de administrador
+        setTimeout(checkAdminPermissions, 1000); // Pequeno delay para garantir que currentUser seja atualizado
+    }
+});
+
+// Abrir modal de banimento
+banUserButton.addEventListener('click', () => {
+    if (checkAdminPermissions()) {
+        playButtonSound();
+        banModal.style.display = 'block';
+    } else {
+        showNotification('Você não tem permissão para banir usuários');
+    }
+});
+
+// Fechar modal de banimento
+closeBan.addEventListener('click', () => {
+    playButtonSound();
+    banModal.style.display = 'none';
+});
+
+// Processar banimento
+submitBanBtn.addEventListener('click', () => {
+    playButtonSound();
+    
+    // Verificar permissões
+    if (!checkAdminPermissions()) {
+        showNotification('Permissão negada');
+        banModal.style.display = 'none';
+        return;
+    }
+    
+    const email = document.getElementById('banEmail').value.trim();
+    const reason = document.getElementById('banReason').value.trim();
+    const deleteData = document.getElementById('deleteUserData').checked;
+    
+    if (!email) {
+        showNotification('Por favor, digite um email válido');
+        return;
+    }
+    
+    // Buscar usuário pelo email
+    db.collection('users')
+        .where('email', '==', email)
+        .get()
+        .then((querySnapshot) => {
+            if (querySnapshot.empty) {
+                showNotification('Usuário não encontrado');
+                return;
+            }
+            
+            const userDoc = querySnapshot.docs[0];
+            const userId = userDoc.id;
+            const userData = userDoc.data();
+            
+            // Confirmar banimento
+            if (confirm(`Tem certeza que deseja banir o usuário ${userData.name || email}?`)) {
+                // Adicionar à lista de banidos
+                return db.collection('bannedUsers').doc(userId).set({
+                    email: email,
+                    name: userData.name || 'Desconhecido',
+                    bannedBy: currentUser.uid,
+                    bannedByEmail: currentUser.email,
+                    reason: reason || 'Sem motivo especificado',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    active: true
+                })
+                .then(() => {
+                    // Se opção de deletar dados estiver marcada
+                    if (deleteData) {
+                        // Deletar mensagens do usuário
+                        const deleteMessages = db.collection('messages')
+                            .where('userId', '==', userId)
+                            .get()
+                            .then((snapshot) => {
+                                const batch = db.batch();
+                                snapshot.forEach((doc) => {
+                                    batch.delete(doc.ref);
+                                });
+                                return batch.commit();
+                            });
+                        
+                        // Deletar solicitações de amizade
+                        const deleteFriendRequests = db.collection('friendRequests')
+                            .where('fromId', '==', userId)
+                            .get()
+                            .then((snapshot) => {
+                                const batch = db.batch();
+                                snapshot.forEach((doc) => {
+                                    batch.delete(doc.ref);
+                                });
+                                return batch.commit();
+                            })
+                            .then(() => {
+                                return db.collection('friendRequests')
+                                    .where('toId', '==', userId)
+                                    .get()
+                                    .then((snapshot) => {
+                                        const batch = db.batch();
+                                        snapshot.forEach((doc) => {
+                                            batch.delete(doc.ref);
+                                        });
+                                        return batch.commit();
+                                    });
+                            });
+                        
+                        // Deletar amizades
+                        const deleteFriends = db.collection('friends')
+                            .where('userId', '==', userId)
+                            .get()
+                            .then((snapshot) => {
+                                const batch = db.batch();
+                                snapshot.forEach((doc) => {
+                                    batch.delete(doc.ref);
+                                });
+                                return batch.commit();
+                            })
+                            .then(() => {
+                                return db.collection('friends')
+                                    .where('friendId', '==', userId)
+                                    .get()
+                                    .then((snapshot) => {
+                                        const batch = db.batch();
+                                        snapshot.forEach((doc) => {
+                                            batch.delete(doc.ref);
+                                        });
+                                        return batch.commit();
+                                    });
+                            });
+                        
+                        // Excluir perfil do usuário em último lugar
+                        const deleteUserProfile = Promise.all([deleteMessages, deleteFriendRequests, deleteFriends])
+                            .then(() => {
+                                return db.collection('users').doc(userId).delete();
+                            });
+                        
+                        return deleteUserProfile;
+                    }
+                    
+                    return Promise.resolve();
+                });
+            }
+        })
+        .then(() => {
+            showNotification('Usuário banido com sucesso!');
+            banModal.style.display = 'none';
+            
+            // Limpar campos
+            document.getElementById('banEmail').value = '';
+            document.getElementById('banReason').value = '';
+            document.getElementById('deleteUserData').checked = false;
+        })
+        .catch((error) => {
+            console.error("Erro ao banir usuário:", error);
+            showNotification('Erro ao banir usuário: ' + error.message);
+        });
+});
+
+// Verificar se usuário está banido ao fazer login
+function checkUserBanStatus(userId) {
+    return db.collection('bannedUsers')
+        .doc(userId)
+        .get()
+        .then((doc) => {
+            if (doc.exists && doc.data().active) {
+                // Usuário está banido, desconectar
+                auth.signOut();
+                showNotification('Esta conta foi banida. Entre em contato com o suporte.');
+                return true;
+            }
+            return false;
+        })
+        .catch((error) => {
+            console.error("Erro ao verificar status de banimento:", error);
+            return false;
+        });
+}
+
+// Modificar o onAuthStateChanged para verificar banimento
+const originalAuthStateChanged = auth.onAuthStateChanged;
+auth.onAuthStateChanged = function(observer) {
+    return originalAuthStateChanged.call(this, (user) => {
+        if (user) {
+            checkUserBanStatus(user.uid).then((isBanned) => {
+                if (!isBanned) {
+                    observer(user);
+                } else {
+                    observer(null);
+                }
+            });
+        } else {
+            observer(null);
+        }
+    });
+};
         <!--Start of Tawk.to Script-->
 
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
