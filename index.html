@@ -1029,7 +1029,58 @@ button:disabled {
                     <input type="checkbox" id="termsAgreement">
                     <label for="termsAgreement">Entendo que fornecer informações falsas resultará em banimento permanente.</label>
                 </div>
+            <!-- Botão flutuante para recuperação de conta -->
+<div class="floating-recovery-button" id="recoveryButton">
+    <svg viewBox="0 0 24 24"><path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,16 6,15.47C6,13.82 8.71,12.47 12,12.47C15.29,12.47 18,13.79 18,15.47C17.76,16 17.47,16.5 17.13,17Z"></path></svg>
+</div>
+
+<!-- Modal para recuperação de contas -->
+<div class="recovery-modal" id="recoveryModal">
+    <div class="recovery-box">
+        <div class="recovery-header">
+            <h2>Recuperação de Conta Banida</h2>
+            <button class="close-recovery" id="closeRecovery">&times;</button>
+        </div>
+        <div class="recovery-content">
+            <p>Este formulário é apenas para recuperação de contas banidas ou suspensas.</p>
+            
+            <div class="form-group">
+                <label for="recoveryEmail">Email da conta banida:</label>
+                <input type="email" id="recoveryEmail" placeholder="Seu email">
             </div>
+            
+            <div class="form-group">
+                <label for="recoveryPassword">Senha da conta:</label>
+                <input type="password" id="recoveryPassword" placeholder="Sua senha">
+            </div>
+            
+            <div class="form-group">
+                <label for="recoveryReason">Motivo do banimento (se souber):</label>
+                <textarea id="recoveryReason" placeholder="Descreva por que acha que sua conta foi banida"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Upload de documento de identificação:</label>
+                <div class="file-upload">
+                    <input type="file" id="documentUpload" accept="image/*,.pdf" style="display:none;">
+                    <button class="upload-btn" id="uploadDocumentBtn">Selecionar arquivo</button>
+                    <span id="fileName">Nenhum arquivo selecionado</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Termo de compromisso:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="termsAgreement">
+                    <label for="termsAgreement">Entendo que fornecer informações falsas resultará em banimento permanente.</label>
+                </div>
+            </div>
+            
+            <button class="btn" id="submitRecoveryBtn" disabled>Enviar Solicitação</button>
+            
+            <div class="recovery-status" id="recoveryStatus"></div>
+        </div>
+    </div>
             
             <button class="btn" id="submitRecoveryBtn" disabled>Enviar Solicitação</button>
             
