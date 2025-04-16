@@ -1022,7 +1022,7 @@ if (user.email === 'isaacmuaco582@gmail.com' || user.email === 'jeremiaslouco11@
             // Adicionar nome de usuário e badge de verificação se for verificado
             let senderName = data.userName || 'Usuário';
             if (data.verified) {
-                senderName += ' <span class="verification-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg></span>';
+                senderName += ' <i class="fa-solid fa-circle-check verified-icon"></i>';
             }
             
             messageDiv.innerHTML = `
