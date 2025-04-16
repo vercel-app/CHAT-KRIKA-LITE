@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" href="styles/style.css"/>
+  <title>CHAT KRIKA LITE</title>
+</head>
+<body>
+  <h1>
+  
+  </h1>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat Surreal</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffffff, #b19cd9);
+            height: 100vh;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        /* Temas */
+        body.theme-dark-red {
+            background: linear-gradient(135deg, #300, #900);
+        }
+
+        body.theme-dark-green {
+            background: linear-gradient(135deg, #030, #090);
+        }
+
+        body.theme-surreal-black {
+            background: linear-gradient(135deg, #111, #333);
+        }
+
+        body.theme-dark-blue {
+            background: linear-gradient(135deg, #003, #006);
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Área de Login/Cadastro */
+        .auth-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-box {
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .auth-box h2 {
+            margin-bottom: 20px;
+            color: #7b68ee;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #7b68ee;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #6a5acd;
+            transform: translateY(-2px);
+        }
+
+        .switch-form {
+            margin-top: 15px;
+            color: #7b68ee;
+            cursor: pointer;
+        }
+
+        /* Área de Chat */
+        .chat-container {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header .logo {
+            font-weight: bold;
+            font-size: 20px;
+            color: white;
+        }
+
+        .header .icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icon:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+        }
+
+        .icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .chat-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: #7b68ee;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #333;
+            width: fit-content;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s ease;
+            display: none;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #666;
+            border-radius: 50%;
+            display: inline-block;
+            animation: typing 1s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            margin-right: 10px;
+        }
+
+        .send-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: #7b68ee;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: #6a5acd;
+            transform: scale(1.1);
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* Configurações */
+        .settings-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .settings-box {
+            width: 90%;
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .settings-header h2 {
+            color: #7b68ee;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .settings-section {
+            margin-bottom: 20px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .theme-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-option.default {
+            background: linear-gradient(135deg, #ffffff, #b19cd9);
+        }
+
+        .theme-option.dark-red {
+            background: linear-gradient(135deg, #300, #900);
+        }
+
+        .theme-option.dark-green {
+            background: linear-gradient(135deg, #030, #090);
+        }
+
+        .theme-option.surreal-black {
+            background: linear-gradient(135deg, #111, #333);
+        }
+
+        .theme-option.dark-blue {
+            background: linear-gradient(135deg, #003, #006);
+        }
+
+        .theme-option.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #7b68ee;
+        }
+
+        .toggle-switch {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #7b68ee;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .logout-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #f44336;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+        }
+
+        /* User accounts modal */
+        .accounts-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .accounts-box {
+            width: 90%;
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .accounts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .close-accounts {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .account-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .account-item:hover {
+            background: #e0e0e0;
+        }
+
+        .account-item.verified {
+            border-left: 4px solid #4caf50;
+        }
+
+        .account-info {
+            flex: 1;
+        }
+
+        .account-email {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .verified-badge {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4caf50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Animações */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+        
+        /* Friend request */
+        .friend-request {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .friend-request-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .friend-request-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .accept-btn {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .reject-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        /* Verificação badge */
+        .verification-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 5px;
+            color: #1da1f2;
+        }
+
+        .verification-badge svg {
+            width: 15px;
+            height: 15px;
+            fill: #1da1f2;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .auth-box, .settings-box, .accounts-box {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Container Auth -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box" id="loginBox">
+          <img src="logo.png" alt="Descrição da imagem" width="100" height="100">
+            <h2>Login</h2>
+            <div class="form-group">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="loginPassword" placeholder="Senha" required>
+            </div>
+            <button class="btn" id="loginBtn">Entrar</button>
+            <p class="switch-form" id="switchToRegister">Não tem uma conta? Cadastre-se</p>
+            <button class="btn" id="accountsBtn" style="margin-top: 10px; background: #4caf50;">Minhas Contas</button>
+        </div>
+
+        <div class="auth-box" id="registerBox" style="display: none;">
+            <h2>Cadastro</h2>
+            <div class="form-group">
+                <input type="text" id="registerName" placeholder="Nome de usuário" required>
+            </div>
+            <div class="form-group">
+                <input type="email" id="registerEmail" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="registerPassword" placeholder="Senha" required>
+            </div>
+            <button class="btn" id="registerBtn">Cadastrar</button>
+            <p class="switch-form" id="switchToLogin">Já tem uma conta? Faça login</p>
+        </div>
+    </div>
+
+    <!-- Container Chat -->
+    <div class="chat-container" id="chatContainer">
+        <div class="header">
+            <div class="logo">Chat KRIKA LITE <img src="logo.png" alt="Descrição da imagem" width="100" height="100"></div>
+            <div class="icons">
+                <div class="icon" id="addFriend">
+                    <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                </div>
+                <div class="icon" id="settingsIcon">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"></path></svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-area" id="chatArea">
+            <!-- Mensagens serão inseridas dinamicamente aqui -->
+            <div class="typing-indicator" id="typingIndicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Digite uma mensagem...">
+            <button class="send-btn" id="sendBtn">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Container Configurações -->
+    <div class="settings-container" id="settingsContainer">
+        <div class="settings-box">
+            <div class="settings-header">
+                <h2>Configurações</h2>
+                <button class="close-settings" id="closeSettings">&times;</button>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Temas</h3>
+                <div class="theme-options">
+                    <div class="theme-option default active" data-theme="default"></div>
+                    <div class="theme-option dark-red" data-theme="dark-red"></div>
+                    <div class="theme-option dark-green" data-theme="dark-green"></div>
+                    <div class="theme-option surreal-black" data-theme="surreal-black"></div>
+                    <div class="theme-option dark-blue" data-theme="dark-blue"></div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Sons</h3>
+                <div class="toggle-switch">
+                    <span>Sons de notificação</span>
+                    <label class="switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Ícones</h3>
+                <div class="toggle-switch">
+                    <span>Exibir ícones</span>
+                    <label class="switch">
+                        <input type="checkbox" id="iconsToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <button class="logout-btn" id="logoutBtn">Encerrar Sessão</button>
+        </div>
+    </div>
+
+    <!-- Container Contas de Usuário -->
+    <div class="accounts-modal" id="accountsModal">
+        <div class="accounts-box">
+            <div class="accounts-header">
+                <h2>Minhas Contas</h2>
+                <button class="close-accounts" id="closeAccounts">&times;</button>
+            </div>
+            
+            <div id="accountsList">
+                <!-- Contas serão inseridas dinamicamente aqui -->
+                <div class="account-item verified">
+                    <div class="account-info">
+                        <div class="account-email">isaacmuaco582@gmail.com</div>
+                    </div>
+                    <div class="verified-badge">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificação -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Solicitação de amizade -->
+    <div class="friend-request" id="friendRequest">
+        <p><strong id="friendRequestName">Usuário</strong> quer te adicionar como amigo</p>
+        <div class="friend-request-actions">
+            <button class="accept-btn" id="acceptFriendRequest">Aceitar</button>
+            <button class="reject-btn" id="rejectFriendRequest">Recusar</button>
+        </div>
+    </div>
+
+    <!-- Sons -->
+    <audio id="messageSound" src="mensage.mp3" preload="auto"></audio>
+    <audio id="notificationSound" src="notificação.mp3" preload="auto"></audio>
+    <audio id="buttonSound" src="botão.mp3" preload="auto"></audio>
+
+    <script>
+        // Inicialização do Firebase
+        firebase.initializeApp({
+            apiKey: "AIzaSyBO_lkHCi7QIOcE1vbNEtx3gknsDfZHAps",
+            authDomain: "banco-de-dadossy.firebaseapp.com",
+            projectId: "banco-de-dadossy",
+            storageBucket: "banco-de-dadossy.firebasestorage.app",
+            messagingSenderId: "1972078944",
+            appId: "1:1972078944:web:d5c938bb64f05448f87605",
+            measurementId: "G-R5DQCJ1N66"
+        });
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // Elementos do DOM
+        const authContainer = document.getElementById('authContainer');
+        const loginBox = document.getElementById('loginBox');
+        const registerBox = document.getElementById('registerBox');
+        const chatContainer = document.getElementById('chatContainer');
+        const settingsContainer = document.getElementById('settingsContainer');
+        const accountsModal = document.getElementById('accountsModal');
+        const notification = document.getElementById('notification');
+        const friendRequest = document.getElementById('friendRequest');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        // Sons
+        const messageSound = document.getElementById('messageSound');
+        const notificationSound = document.getElementById('notificationSound');
+        const buttonSound = document.getElementById('buttonSound');
+        
+        // Configurações
+        let soundEnabled = true;
+        let iconsEnabled = true;
+        let currentTheme = 'default';
+        let currentUser = null;
+        let trialEndDate = null;
+        let isVerified = false;
+        let typingTimeout = null;
+        
+        // Estado da verificação
+        const verifiedUsers = {
+            'isaacmuaco582@gmail.com': true
+        };
+        
+        // Alternar entre formulários de login e cadastro
+        document.getElementById('switchToRegister').addEventListener('click', () => {
+            playButtonSound();
+            loginBox.style.display = 'none';
+            registerBox.style.display = 'block';
+        });
+        
+        document.getElementById('switchToLogin').addEventListener('click', () => {
+            playButtonSound();
+            registerBox.style.display = 'none';
+            loginBox.style.display = 'block';
+        });
+        
+        // Cadastro de usuário
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            playButtonSound();
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            
+            // Verificar se o nome contém emojis
+            if (/[\uD800-\uDBFF][\uDC00-\uDFFF]/.test(name)) {
+                showNotification('Não é permitido usar emojis no nome de usuário');
+                return;
+            }
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Definir data de término do período gratuito (3 semanas)
+                    const trialEnd = new Date();
+                    trialEnd.setDate(trialEnd.getDate() + 21);
+                    
+                    // Salvar informações do usuário no Firestore
+                    return db.collection('users').doc(user.uid).set({
+                        name: name,
+                        email: email,
+                        trialEnd: trialEnd,
+                        verified: email === 'isaacmuaco582@gmail.com', // Verificar se é o email especial
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+  .then(() => {
+                    showNotification('Cadastro realizado com sucesso!');
+                    registerBox.style.display = 'none';
+                    loginBox.style.display = 'block';
+                })
+                .catch((error) => {
+                    showNotification('Erro ao cadastrar: ' + error.message);
+                });
+        });
+        
+        // Login de usuário
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            playButtonSound();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    showNotification('Login realizado com sucesso!');
+                })
+                .catch((error) => {
+                    showNotification('Erro ao fazer login: ' + error.message);
+                });
+        });
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            playButtonSound();
+            auth.signOut()
+                .then(() => {
+                    showNotification('Sessão encerrada com sucesso!');
+                    settingsContainer.style.display = 'none';
+                })
+                .catch((error) => {
+                    showNotification('Erro ao encerrar sessão: ' + error.message);
+                });
+        });
+        
+        // Verificar estado de autenticação
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                
+                // Buscar informações do usuário
+                db.collection('users').doc(user.uid).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            trialEndDate = userData.trialEnd ? userData.trialEnd.toDate() : null;
+                            isVerified = userData.verified || false;
+                            
+                            // Verificar se é o email especial
+                            if (user.email === 'isaacmuaco582@gmail.com') {
+                                isVerified = true;
+                                // Atualizar status de verificação no banco de dados
+                                db.collection('users').doc(user.uid).update({
+                                    verified: true
+                                });
+                            }
+                            
+                            // Exibir interface do chat
+                            authContainer.style.display = 'none';
+                            chatContainer.style.display = 'flex';
+                            
+                            // Carregar mensagens
+                            loadMessages();
+                            
+                            // Verificar data de término do período gratuito
+                            checkTrialStatus();
+                        }
+                    });
+            } else {
+                // Exibir interface de login
+                authContainer.style.display = 'flex';
+                chatContainer.style.display = 'none';
+                currentUser = null;
+            }
+        });
+        
+        // Verificar status do período de teste
+        function checkTrialStatus() {
+            if (!isVerified && trialEndDate) {
+                const now = new Date();
+                
+                if (now > trialEndDate) {
+                    showNotification('Seu período gratuito expirou. Adquira a verificação para continuar!');
+                    // Implementar lógica para restringir recursos
+                } else {
+                    const daysLeft = Math.ceil((trialEndDate - now) / (1000 * 60 * 60 * 24));
+                    showNotification(`Período gratuito: ${daysLeft} dias restantes`);
+                }
+            }
+        }
+        
+        // Carregar mensagens
+        function loadMessages() {
+            const chatArea = document.getElementById('chatArea');
+            
+            // Limpar área de chat (exceto indicador de digitação)
+            const typingIndicator = document.getElementById('typingIndicator');
+            chatArea.innerHTML = '';
+            chatArea.appendChild(typingIndicator);
+            
+            // Buscar mensagens do Firestore
+            db.collection('messages')
+                .orderBy('timestamp', 'asc')
+                .limit(50)
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const data = change.doc.data();
+                            displayMessage(data);
+                        }
+                    });
+                    
+                    // Rolar para o final
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                });
+        }
+        
+        // Exibir mensagem
+        function displayMessage(data) {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            
+            // Verificar se a mensagem é do usuário atual
+            if (data.userId === currentUser.uid) {
+                messageDiv.classList.add('sent');
+            } else {
+                messageDiv.classList.add('received');
+                
+                // Reproduzir som de mensagem recebida
+                if (soundEnabled) {
+                    messageSound.play();
+                }
+            }
+            
+            // Adicionar nome de usuário e badge de verificação se for verificado
+            let senderName = data.userName || 'Usuário';
+            if (data.verified) {
+                senderName += ' <span class="verification-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg></span>';
+            }
+            
+            messageDiv.innerHTML = `
+                <strong>${senderName}:</strong><br>
+                ${data.text}
+            `;
+            
+            // Inserir antes do indicador de digitação
+            const typingIndicator = document.getElementById('typingIndicator');
+            chatArea.insertBefore(messageDiv, typingIndicator);
+            
+            // Rolar para o final
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+        
+        // Enviar mensagem
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            } else {
+                // Indicar que o usuário está digitando
+                indicateTyping();
+            }
+        });
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message !== '') {
+                playButtonSound();
+                
+                // Buscar informações do usuário atual
+                db.collection('users').doc(currentUser.uid).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            const userData = doc.data();
+                            
+                            // Adicionar mensagem ao Firestore
+                            return db.collection('messages').add({
+                                text: message,
+                                userId: currentUser.uid,
+                                userName: userData.name,
+                                verified: isVerified,
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    })
+                    .then(() => {
+                        // Limpar campo de entrada
+                        messageInput.value = '';
+                        
+                        // Reproduzir som de mensagem enviada
+                        if (soundEnabled) {
+                            messageSound.play();
+                        }
+                    })
+                    .catch((error) => {
+                        showNotification('Erro ao enviar mensagem: ' + error.message);
+                    });
+            }
+        }
+        
+        // Indicar que está digitando
+        function indicateTyping() {
+            // Enviar informação para o Firestore
+            db.collection('typing').doc(currentUser.uid).set({
+                typing: true,
+                userName: currentUser.displayName || 'Usuário',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Limpar timeout existente
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+            
+            // Definir novo timeout para parar de indicar digitação após 3 segundos
+            typingTimeout = setTimeout(() => {
+                db.collection('typing').doc(currentUser.uid).update({
+                    typing: false
+                });
+            }, 3000);
+        }
+        
+        // Observar indicador de digitação
+        function watchTypingIndicator() {
+            db.collection('typing')
+                .where('typing', '==', true)
+                .onSnapshot((snapshot) => {
+                    let anyoneTyping = false;
+                    
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        
+                        // Verificar se não é o usuário atual
+                        if (doc.id !== currentUser.uid) {
+                            anyoneTyping = true;
+                        }
+                    });
+                    
+                    // Exibir ou ocultar indicador de digitação
+                    const typingIndicator = document.getElementById('typingIndicator');
+                    typingIndicator.style.display = anyoneTyping ? 'flex' : 'none';
+                });
+        }
+        
+        // Configurações
+        document.getElementById('settingsIcon').addEventListener('click', () => {
+            playButtonSound();
+            settingsContainer.style.display = 'block';
+        });
+        
+        document.getElementById('closeSettings').addEventListener('click', () => {
+            playButtonSound();
+            settingsContainer.style.display = 'none';
+        });
+        
+        // Minhas Contas
+        document.getElementById('accountsBtn').addEventListener('click', () => {
+            playButtonSound();
+            accountsModal.style.display = 'block';
+        });
+        
+        document.getElementById('closeAccounts').addEventListener('click', () => {
+            playButtonSound();
+            accountsModal.style.display = 'none';
+        });
+        
+        // Alternar tema
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                playButtonSound();
+                const theme = option.getAttribute('data-theme');
+                changeTheme(theme);
+                
+                // Atualizar seleção visual
+                themeOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+            });
+        });
+        
+        function changeTheme(theme) {
+            // Remover classes de tema anteriores
+            document.body.classList.remove('theme-dark-red', 'theme-dark-green', 'theme-surreal-black', 'theme-dark-blue');
+            
+            // Adicionar nova classe de tema (se não for o padrão)
+            if (theme !== 'default') {
+                document.body.classList.add('theme-' + theme);
+            }
+            
+            currentTheme = theme;
+            
+            // Salvar preferência do usuário
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).update({
+                    theme: theme
+                });
+            }
+        }
+        
+        // Alternar sons
+        document.getElementById('soundToggle').addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+            
+            // Salvar preferência do usuário
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).update({
+                    soundEnabled: soundEnabled
+                });
+            }
+            
+            // Tocar som de botão se estiver ativado
+            if (soundEnabled) {
+                playButtonSound();
+            }
+        });
+        
+        // Alternar ícones
+        document.getElementById('iconsToggle').addEventListener('change', (e) => {
+            iconsEnabled = e.target.checked;
+            
+            // Atualizar visibilidade dos ícones
+            const icons = document.querySelectorAll('.icon');
+            icons.forEach(icon => {
+                icon.style.display = iconsEnabled ? 'flex' : 'none';
+            });
+            
+            // Salvar preferência do usuário
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).update({
+                    iconsEnabled: iconsEnabled
+                });
+            }
+            
+            // Tocar som de botão
+            playButtonSound();
+        });
+        
+        // Adicionar amigo
+        document.getElementById('addFriend').addEventListener('click', () => {
+            playButtonSound();
+            const friendEmail = prompt('Digite o email do usuário que deseja adicionar como amigo:');
+            
+            if (friendEmail && friendEmail.trim() !== '') {
+                // Buscar usuário pelo email
+                db.collection('users')
+                    .where('email', '==', friendEmail.trim())
+                    .get()
+                    .then((querySnapshot) => {
+                        if (!querySnapshot.empty) {
+                            const friendDoc = querySnapshot.docs[0];
+                            const friendId = friendDoc.id;
+                            const friendData = friendDoc.data();
+                            
+                            // Enviar solicitação de amizade
+                            return db.collection('friendRequests').add({
+                                fromId: currentUser.uid,
+                                fromName: currentUser.displayName || 'Usuário',
+                                fromEmail: currentUser.email,
+                                toId: friendId,
+                                toName: friendData.name,
+                                toEmail: friendData.email,
+                                status: 'pending',
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        } else {
+                            throw new Error('Usuário não encontrado');
+                        }
+                    })
+                    .then(() => {
+                        showNotification('Solicitação de amizade enviada!');
+                    })
+                    .catch((error) => {
+                        showNotification('Erro: ' + error.message);
+                    });
+            }
+        });
+        
+        // Observar solicitações de amizade
+        function watchFriendRequests() {
+            if (currentUser) {
+                db.collection('friendRequests')
+                    .where('toId', '==', currentUser.uid)
+                    .where('status', '==', 'pending')
+                    .onSnapshot((snapshot) => {
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === 'added') {
+                                const data = change.doc.data();
+                                
+                                // Exibir notificação de solicitação de amizade
+                                showFriendRequest(change.doc.id, data.fromName);
+                                
+                                // Reproduzir som de notificação
+                                if (soundEnabled) {
+                                    notificationSound.play();
+                                }
+                            }
+                        });
+                    });
+            }
+        }
+        
+        // Exibir solicitação de amizade
+        function showFriendRequest(requestId, fromName) {
+            const friendRequestEl = document.getElementById('friendRequest');
+            const friendRequestName = document.getElementById('friendRequestName');
+            
+            friendRequestName.textContent = fromName;
+            friendRequestEl.setAttribute('data-request-id', requestId);
+            friendRequestEl.style.display = 'block';
+        }
+        
+        // Aceitar solicitação de amizade
+        document.getElementById('acceptFriendRequest').addEventListener('click', () => {
+            playButtonSound();
+            const requestId = document.getElementById('friendRequest').getAttribute('data-request-id');
+            
+            if (requestId) {
+                db.collection('friendRequests').doc(requestId).update({
+                    status: 'accepted',
+                    responseDate: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    showNotification('Solicitação de amizade aceita!');
+                    document.getElementById('friendRequest').style.display = 'none';
+                    
+                    // Buscar dados da solicitação
+                    return db.collection('friendRequests').doc(requestId).get();
+                })
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        
+                        // Adicionar amizade para ambos os usuários
+                        const friendship1 = db.collection('friends').add({
+                            userId: currentUser.uid,
+                            friendId: data.fromId,
+                            friendName: data.fromName,
+                            friendEmail: data.fromEmail,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        const friendship2 = db.collection('friends').add({
+                            userId: data.fromId,
+                            friendId: currentUser.uid,
+                            friendName: currentUser.displayName || 'Usuário',
+                            friendEmail: currentUser.email,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        return Promise.all([friendship1, friendship2]);
+                    }
+                })
+                .catch((error) => {
+                    showNotification('Erro: ' + error.message);
+                });
+            }
+        });
+        
+        // Recusar solicitação de amizade
+        document.getElementById('rejectFriendRequest').addEventListener('click', () => {
+            playButtonSound();
+            const requestId = document.getElementById('friendRequest').getAttribute('data-request-id');
+            
+            if (requestId) {
+                db.collection('friendRequests').doc(requestId).update({
+                    status: 'rejected',
+                    responseDate: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    showNotification('Solicitação de amizade recusada');
+                    document.getElementById('friendRequest').style.display = 'none';
+                })
+                .catch((error) => {
+                    showNotification('Erro: ' + error.message);
+                });
+            }
+        });
+        
+        // Função para banir usuário
+        function banUser(userId) {
+            if (isVerified) {
+                db.collection('bannedUsers').doc(userId).set({
+                    bannedBy: currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    active: true
+                })
+                .then(() => {
+                    showNotification('Usuário banido com sucesso');
+                })
+                .catch((error) => {
+                    showNotification('Erro ao banir usuário: ' + error.message);
+                });
+            } else {
+                showNotification('Apenas usuários verificados podem banir outros usuários');
+            }
+        }
+        
+        // Exibir notificação
+        function showNotification(message) {
+            const notificationEl = document.getElementById('notification');
+            notificationEl.textContent = message;
+            notificationEl.classList.add('show');
+            
+            // Reproduzir som de notificação
+            if (soundEnabled) {
+                notificationSound.play();
+            }
+            
+            // Ocultar após 3 segundos
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Reproduzir som de botão
+        function playButtonSound() {
+            if (soundEnabled) {
+                buttonSound.currentTime = 0;
+                buttonSound.play();
+            }
+        }
+        
+        // Impedir zoom da página
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+        
+        // Impedir que o refresh da página feche o chat
+        window.addEventListener('beforeunload', function (e) {
+            if (currentUser) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar conta permanentemente verificada
+            auth.onAuthStateChanged(function(user) {
+                if (user && user.email === 'isaacmuaco582@gmail.com') {
+                    db.collection('users').doc(user.uid).update({
+                        verified: true,
+                        permanentVerification: true
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
