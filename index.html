@@ -13,7 +13,18 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .verified-icon {
+  color: #1da1f2;
+  font-size: 16px;
+  margin-left: 6px;
+}
+.user-name {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
         * {
             margin: 0;
             padding: 0;
@@ -741,7 +752,7 @@
     <div class="accounts-modal" id="accountsModal">
         <div class="accounts-box">
             <div class="accounts-header">
-                <h2>Minhas Contas</h2>
+                <h2>CONTAS VERIFICADAS</h2>
                 <button class="close-accounts" id="closeAccounts">&times;</button>
             </div>
             
@@ -750,9 +761,11 @@
                 <div class="account-item verified">
                     <div class="account-info">
                         <div class="account-email">isaacmuaco582@gmail.com</div>
+                   <div class="account-email">jeremiaslouco11@gmail.com</div>
+                   
                     </div>
                     <div class="verified-badge">
-                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+                        <i class="fa-solid fa-circle-check verified-icon"></i>
                     </div>
                 </div>
             </div>
@@ -815,11 +828,13 @@
         let trialEndDate = null;
         let isVerified = false;
         let typingTimeout = null;
-        
+      
         // Estado da verificação
-        const verifiedUsers = {
-            'isaacmuaco582@gmail.com': true
-        };
+const verifiedUsers = {
+    'isaacmuaco582@gmail.com': true,
+    'jeremiaslouco11@gmail.com': true
+};
+        
         
         // Alternar entre formulários de login e cadastro
         document.getElementById('switchToRegister').addEventListener('click', () => {
@@ -853,7 +868,7 @@
                     
                     // Definir data de término do período gratuito (3 semanas)
                     const trialEnd = new Date();
-                    trialEnd.setDate(trialEnd.getDate() + 21);
+                    trialEnd.setDate(trialEnd.getDate() + 2);
                     
                     // Salvar informações do usuário no Firestore
                     return db.collection('users').doc(user.uid).set({
@@ -916,8 +931,10 @@
                             isVerified = userData.verified || false;
                             
                             // Verificar se é o email especial
-                            if (user.email === 'isaacmuaco582@gmail.com') {
-                                isVerified = true;
+                          // Verificar se é o email especial
+if (user.email === 'isaacmuaco582@gmail.com' || user.email === 'jeremiaslouco11@gmail.com') {
+    isVerified = true;
+                            
                                 // Atualizar status de verificação no banco de dados
                                 db.collection('users').doc(user.uid).update({
                                     verified: true
@@ -1404,19 +1421,22 @@
                 e.returnValue = '';
             }
         });
-        
         // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar conta permanentemente verificada
-            auth.onAuthStateChanged(function(user) {
-                if (user && user.email === 'isaacmuaco582@gmail.com') {
-                    db.collection('users').doc(user.uid).update({
-                        verified: true,
-                        permanentVerification: true
-                    });
-                }
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar conta permanentemente verificada
+    auth.onAuthStateChanged(function(user) {
+        if (user && (
+            user.email === 'isaacmuaco582@gmail.com' ||
+            user.email === 'jeremiaslouco11@gmail.com'
+        )) {
+            db.collection('users').doc(user.uid).update({
+                verified: true,
+                permanentVerification: true
             });
-        });
+        }
+    });
+});
+        
         <!--Start of Tawk.to Script-->
 
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
