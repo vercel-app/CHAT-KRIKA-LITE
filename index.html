@@ -1056,28 +1056,7 @@ button:disabled {
             
             <div class="form-group">
                 <label for="recoveryReason">Motivo do banimento (se souber):</label>
-                <textarea id="recoveryReason" placeholder="Descreva por que acha que sua conta foi banida"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Upload de documento de identificação:</label>
-                <div class="file-upload">
-                    <input type="file" id="documentUpload" accept="image/*,.pdf" style="display:none;">
-                    <button class="upload-btn" id="uploadDocumentBtn">Selecionar arquivo</button>
-                    <span id="fileName">Nenhum arquivo selecionado</span>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Termo de compromisso:</label>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="termsAgreement">
-                    <label for="termsAgreement">Entendo que fornecer informações falsas resultará em banimento permanente.</label>
-                </div>
-            </div>
-            
-            <button class="btn" id="submitRecoveryBtn" disabled>Enviar Solicitação</button>
-            
+
             <div class="recovery-status" id="recoveryStatus"></div>
         </div>
     </div>
@@ -1211,55 +1190,7 @@ button:disabled {
         </div>
     </div>
 </div>
-          <!-- Botão flutuante para recuperação de conta -->
-<div class="floating-recovery-button" id="recoveryButton">
-    <svg viewBox="0 0 24 24"><path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M17.13,17C15.92,18.85 14.11,20.24 12,20.92C9.89,20.24 8.08,18.85 6.87,17C6.53,16.5 6.24,16 6,15.47C6,13.82 8.71,12.47 12,12.47C15.29,12.47 18,13.79 18,15.47C17.76,16 17.47,16.5 17.13,17Z"></path></svg>
-</div>
-
-<!-- Modal para recuperação de contas -->
-<div class="recovery-modal" id="recoveryModal">
-    <div class="recovery-box">
-        <div class="recovery-header">
-            <h2>Recuperação de Conta Banida</h2>
-            <button class="close-recovery" id="closeRecovery">&times;</button>
-        </div>
-        <div class="recovery-content">
-            <p>Este formulário é apenas para recuperação de contas banidas ou suspensas.</p>
-            
-            <div class="form-group">
-                <label for="recoveryEmail">Email da conta banida:</label>
-                <input type="email" id="recoveryEmail" placeholder="Seu email">
-            </div>
-            
-            <div class="form-group">
-                <label for="recoveryPassword">Senha da conta:</label>
-                <input type="password" id="recoveryPassword" placeholder="Sua senha">
-            </div>
-            
-            <div class="form-group">
-                <label for="recoveryReason">Motivo do banimento (se souber):</label>
-                <textarea id="recoveryReason" placeholder="Descreva por que acha que sua conta foi banida"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Upload de documento de identificação:</label>
-                <div class="file-upload">
-                    <input type="file" id="documentUpload" accept="image/*,.pdf" style="display:none;">
-                    <button class="upload-btn" id="uploadDocumentBtn">Selecionar arquivo</button>
-                    <span id="fileName">Nenhum arquivo selecionado</span>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Termo de compromisso:</label>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="termsAgreement">
-                    <label for="termsAgreement">Entendo que fornecer informações falsas resultará em banimento permanente.</label>
-                </div>
-            </div>
-            
-            <button class="btn" id="submitRecoveryBtn" disabled>Enviar Solicitação</button>
-            
+          
             <div class="recovery-status" id="recoveryStatus"></div>
         </div>
     </div>
@@ -1351,8 +1282,8 @@ button:disabled {
       
         // Estado da verificação
 const verifiedUsers = {
-    'isaacmuaco582@gmail.com': true,
-    'jeremiaslouco11@gmail.com': true
+    'isaacmuaco2@gmail.com': true,
+    'isaacflow22@gmail.com': true
 };
         
         
@@ -1452,7 +1383,7 @@ const verifiedUsers = {
                             
                             // Verificar se é o email especial
                           // Verificar se é o email especial
-if (user.email === 'isaacmuaco582@gmail.com' || user.email === 'jeremiaslouco11@gmail.com') {
+if (user.email === 'isaacmuaco2@gmail.com' || user.email === 'isaacflow22@gmail.com') {
     isVerified = true;
                             
                                 // Atualizar status de verificação no banco de dados
@@ -1918,7 +1849,7 @@ if (user.email === 'isaacmuaco582@gmail.com' || user.email === 'jeremiaslouco11@
             // Ocultar após 3 segundos
             setTimeout(() => {
                 notificationEl.classList.remove('show');
-            }, 3000);
+            }, 2000);
         }
         
         // Reproduzir som de botão
@@ -1946,8 +1877,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Verificar conta permanentemente verificada
     auth.onAuthStateChanged(function(user) {
         if (user && (
-            user.email === 'isaacmuaco582@gmail.com' ||
-            user.email === 'jeremiaslouco11@gmail.com'
+            user.email === 'isaacmuaco2@gmail.com' ||
+            user.email === 'isaacflow22@gmail.com'
         )) {
             db.collection('users').doc(user.uid).update({
                 verified: true,
@@ -2231,165 +2162,8 @@ auth.onAuthStateChanged = function(observer) {
         }
     });
 };
-      // Botão e modal de recuperação de conta
-const recoveryButton = document.getElementById('recoveryButton');
-const recoveryModal = document.getElementById('recoveryModal');
-const closeRecovery = document.getElementById('closeRecovery');
-const uploadDocumentBtn = document.getElementById('uploadDocumentBtn');
-const documentUpload = document.getElementById('documentUpload');
-const termsAgreement = document.getElementById('termsAgreement');
-const submitRecoveryBtn = document.getElementById('submitRecoveryBtn');
-const recoveryStatus = document.getElementById('recoveryStatus');
-
-// Mostrar o botão de recuperação apenas na tela de login/cadastro
-function updateRecoveryButtonVisibility() {
-    if (authContainer.style.display !== 'none') {
-        recoveryButton.style.display = 'flex';
-    } else {
-        recoveryButton.style.display = 'none';
-    }
-}
-
-// Observer para detectar mudanças no display do container de autenticação
-const authContainerObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'style') {
-            updateRecoveryButtonVisibility();
-        }
-    });
-});
-
-// Iniciar observação
-authContainerObserver.observe(authContainer, { attributes: true });
-
-// Também atualizar na inicialização
-document.addEventListener('DOMContentLoaded', updateRecoveryButtonVisibility);
-
-// Abrir modal de recuperação
-recoveryButton.addEventListener('click', () => {
-    playButtonSound();
-    recoveryModal.style.display = 'block';
-});
-
-// Fechar modal de recuperação
-closeRecovery.addEventListener('click', () => {
-    playButtonSound();
-    recoveryModal.style.display = 'none';
-});
-
-// Gerenciar upload de documento
-uploadDocumentBtn.addEventListener('click', () => {
-    playButtonSound();
-    documentUpload.click();
-});
-
-// Atualizar nome do arquivo selecionado
-documentUpload.addEventListener('change', (e) => {
-    if (e.target.files[0]) {
-        document.getElementById('fileName').textContent = e.target.files[0].name;
-    } else {
-        document.getElementById('fileName').textContent = 'Nenhum arquivo selecionado';
-    }
-    validateRecoveryForm();
-});
-
-// Verificar checkbox para habilitar botão de envio
-termsAgreement.addEventListener('change', validateRecoveryForm);
-document.getElementById('recoveryEmail').addEventListener('input', validateRecoveryForm);
-document.getElementById('recoveryPassword').addEventListener('input', validateRecoveryForm);
-
-// Validar formulário
-function validateRecoveryForm() {
-    const email = document.getElementById('recoveryEmail').value.trim();
-    const password = document.getElementById('recoveryPassword').value.trim();
-    const fileSelected = documentUpload.files.length > 0;
-    const termsChecked = termsAgreement.checked;
+          
     
-    // Habilitar botão apenas se todos os campos estiverem preenchidos
-    submitRecoveryBtn.disabled = !(email && password && fileSelected && termsChecked);
-}
 
-// Enviar solicitação de recuperação
-submitRecoveryBtn.addEventListener('click', () => {
-    playButtonSound();
-    
-    const email = document.getElementById('recoveryEmail').value.trim();
-    const password = document.getElementById('recoveryPassword').value.trim();
-    const reason = document.getElementById('recoveryReason').value.trim();
-    const file = documentUpload.files[0];
-    
-    // Verificar se é uma conta realmente banida
-    db.collection('bannedUsers')
-        .where('email', '==', email)
-        .get()
-        .then((querySnapshot) => {
-            if (querySnapshot.empty) {
-                // Verificar também na coleção de usuários se o email existe
-                return db.collection('users')
-                    .where('email', '==', email)
-                    .get()
-                    .then((userSnapshot) => {
-                        if (userSnapshot.empty) {
-                            // Email não encontrado no sistema
-                            throw new Error('Este email não está registrado em nosso sistema.');
-                        } else {
-                            // Email encontrado mas não está banido
-                            throw new Error('Esta conta não está banida ou suspensa.');
-                        }
-                    });
-            }
-            
-            // Conta está banida, prosseguir com o upload do documento
-            const storageRef = firebase.storage().ref();
-            const documentRef = storageRef.child(`recovery_documents/${email}/${file.name}`);
-            
-            return documentRef.put(file).then(() => {
-                // Documento enviado com sucesso, registrar solicitação
-                return db.collection('recoveryRequests').add({
-                    email: email,
-                    reason: reason,
-                    documentRef: `recovery_documents/${email}/${file.name}`,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    status: 'pending'
-                });
-            });
-        })
-        .then(() => {
-            // Sucesso
-            recoveryStatus.textContent = 'Solicitação enviada com sucesso! Analisaremos seu caso e entraremos em contato pelo email fornecido.';
-            recoveryStatus.className = 'recovery-status success';
-            
-            // Limpar formulário após 3 segundos
-            setTimeout(() => {
-                recoveryModal.style.display = 'none';
-                recoveryStatus.style.display = 'none';
-                document.getElementById('recoveryEmail').value = '';
-                document.getElementById('recoveryPassword').value = '';
-                document.getElementById('recoveryReason').value = '';
-                document.getElementById('fileName').textContent = 'Nenhum arquivo selecionado';
-                termsAgreement.checked = false;
-                documentUpload.value = '';
-                validateRecoveryForm();
-            }, 3000);
-        })
-        .catch((error) => {
-            // Erro
-            recoveryStatus.textContent = 'Erro: ' + error.message;
-            recoveryStatus.className = 'recovery-status error';
-        });
-});
-        <!--Start of Tawk.to Script-->
-
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/67ff15ecd825181910e0baca/1iou6ramo';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
 </body>
 </html>
