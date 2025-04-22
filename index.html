@@ -799,8 +799,9 @@ s0.parentNode.insertBefore(s1,s0);
                     <div class="account-info">
                         <div class="account-email">isaacmuaco582@gmail.com</div>
                     </div>
-                    <div class="verified-badge">
-                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+                    <div class="verified-badge">        
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_Verified_Badge.svg/2048px-Twitter_Verified_Badge.svg.png" alt="Verificação">
+        
                     </div>
                 </div>
             </div>
@@ -908,7 +909,7 @@ s0.parentNode.insertBefore(s1,s0);
                         name: name,
                         email: email,
                         trialEnd: trialEnd,
-                        verified: email === 'isaacmuaco582@gmail.com', // Verificar se é o email especial
+                        verified: email === 'isaacmuaco782@gmail.com','isaacmuaco2@gmail.com'// Verificar se é o email especial
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 })
@@ -964,7 +965,7 @@ s0.parentNode.insertBefore(s1,s0);
                             isVerified = userData.verified || false;
                             
                             // Verificar se é o email especial
-                            if (user.email === 'isaacmuaco582@gmail.com') {
+                            if (user.email === 'isaacmuaco782@gmail.com','isaacmuaco2@gmail.com') {
                                 isVerified = true;
                                 // Atualizar status de verificação no banco de dados
                                 db.collection('users').doc(user.uid).update({
@@ -1053,7 +1054,7 @@ s0.parentNode.insertBefore(s1,s0);
             // Adicionar nome de usuário e badge de verificação se for verificado
             let senderName = data.userName || 'Usuário';
             if (data.verified) {
-                senderName += ' <span class="verification-badge"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg></span>';
+                senderName += ' <span class="verification-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Twitter_Verified_Badge.svg/2048px-Twitter_Verified_Badge.svg.png" alt="Verificação"</span>';
             }
             
             messageDiv.innerHTML = `
