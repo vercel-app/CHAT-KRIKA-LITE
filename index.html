@@ -1019,7 +1019,7 @@ s0.parentNode.insertBefore(s1,s0);
             // Buscar mensagens do Firestore
             db.collection('messages')
                 .orderBy('timestamp', 'asc')
-                .limit(50)
+                .limit(5000)
                 .onSnapshot((snapshot) => {
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === 'added') {
